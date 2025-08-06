@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 function ChatHeader({ onToggleTheme }) {
   return (
@@ -11,9 +12,11 @@ function ChatHeader({ onToggleTheme }) {
         >
           Toggle Theme
         </button>
+        <Link to="/profile">
         <button className="bg-purple-600 text-white px-4 py-1 rounded-xl text-sm hover:cursor-pointer hover:bg-purple-700 transition">
           See My Profile
         </button>
+        </Link>
       </div>
     </div>
   );

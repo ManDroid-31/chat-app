@@ -1,22 +1,38 @@
-import { useState } from 'react'
-import Sidebar from './components/Sidebar'
-import ChatContainer from './components/ChatContainer'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from "react-hot-toast"
+
+// Import your pages/components
+import Home from './pages/Homepage'; // Main chat page
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import UserProfile from './pages/UserProfile';
+
 function App() {
+  const isAuthenticated = true; //redux state here
 
-	return (
-		<>
-			<div className="fixed inset-0 bg-gray-100 flex">
-				
-				
-				<Sidebar />
+  return (
+    <Router>
+      <Routes>
 
-				{/* Main Chat Area */}
-				<ChatContainer />
-			</div>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
+        <Route
+          path="/"
+          element={isAuthenticated ? <Home /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/profile"
+          element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />}
+        />
 
-		</>
-	)
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+	  <Toaster position="top-right" reverseOrder={false} />
+    </Router>
+
+  );
 }
 
-export default App
+export default App;

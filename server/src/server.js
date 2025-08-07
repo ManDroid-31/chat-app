@@ -66,6 +66,7 @@ io.on("connection", (socket) => {
     const user = await User.findById(receiverId);
     const sender = await User.findById(senderId);
     if (user?.fcm_token) {
+      
       await sendPushNotification(user.fcm_token, {
         title: `New message from ${sender?.username}`,
         body: data.text,

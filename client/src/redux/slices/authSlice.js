@@ -6,13 +6,13 @@ export const fetchUsers = createAsyncThunk('auth/fetchUsers', async (_, thunkAPI
     const response = await fetch("http://localhost:5000/auth/getUsers", {
       headers: { Authorization: `Bearer ${token}` },
     });
-    
+
     const data = await response.json();
-    
+
     if (!response.ok) {
       return thunkAPI.rejectWithValue(data.message || 'Failed to fetch users');
     }
-    
+
     return data;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.message);
@@ -34,12 +34,16 @@ const authSlice = createSlice({
       state.currentUser = action.payload;
       state.isAuthenticated = true;
     },
+    loginSuccess: (state, action) => {
+      state.currentUser = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+      localStorage.setItem('token', action.payload.token);
+    },
     logout: (state) => {
       state.currentUser = null;
-      state.users = [];
       state.token = null;
       state.isAuthenticated = false;
-      state.error = null;
       localStorage.removeItem('token');
     },
     clearError: (state) => {
@@ -65,5 +69,5 @@ const authSlice = createSlice({
   }
 });
 
-export const { setCurrentUser, logout, clearError } = authSlice.actions;
+export const { setCurrentUser, logout, clearError, loginSuccess } = authSlice.actions;
 export default authSlice.reducer;

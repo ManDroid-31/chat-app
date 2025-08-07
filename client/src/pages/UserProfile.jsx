@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
+import { DoorClosed, DoorOpenIcon } from 'lucide-react';
+import { logout } from '../redux/slices/authSlice';
 
 function UserProfile() {
   const [user, setUser] = useState(null);
@@ -10,6 +13,8 @@ function UserProfile() {
   const [formData, setFormData] = useState({ username: '', bio: '', avatar_url: '' });
   const [avatars, setAvatars] = useState([]);
   const navigate = useNavigate();
+
+  const dispatch = useDispatch();
 
 
   useEffect(() => {
@@ -111,13 +116,29 @@ function UserProfile() {
 
 
       <div className="w-full max-w-2xl flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-purple-600">👤 My Profile</h1>
-        <button
-          className="bg-purple-600 text-white px-4 py-2 rounded-xl hover:cursor-pointer hover:bg-purple-700 transition"
+        <h1 className="text-2xl font-bold text-purple-600">My Profile</h1>
+        <div className='flex gap-4'>
+          <button
+          className="bg-purple-600 text-white px-2 h-10 rounded-xl hover:cursor-pointer hover:bg-purple-700 transition"
           onClick={() => navigate("/")}
         >
           Back to Chat
         </button>
+        <button
+          className="bg-purple-600 text-white px-4 py-2 rounded-xl hover:cursor-pointer hover:bg-purple-700 transition"
+          onClick={
+            () => {
+              dispatch(logout());
+              navigate("/login");
+            }
+          }
+        >
+          <div className='flex gap-1 align-middle items-center justify-center'>
+            <DoorOpenIcon height={16} width={16} stroke='red' />
+            Logout
+          </div>
+        </button>
+        </div>
       </div>
 
 

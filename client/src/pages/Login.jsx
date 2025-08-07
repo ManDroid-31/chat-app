@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from '../redux/slices/authSlice';
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -33,6 +36,7 @@ function Login() {
         // console.log(data.token) //works fine 
         localStorage.setItem("token", data.token);
         toast.success("Login successful 🎉");
+        dispatch(loginSuccess({user: data.user, token: data.token}))
         navigate("/");
       } else {
         toast.error(data.message || "Invalid credentials");

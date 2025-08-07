@@ -11,7 +11,7 @@ function MessageBox({ message, isSender, onDelete }) {
           isSender ? "bg-purple-600 text-white" : "bg-gray-200 text-gray-800"
         }`}
       >
-        <p>{message.text}</p>
+        <p>{message.content}</p>
       {
         isSender && 
         <button

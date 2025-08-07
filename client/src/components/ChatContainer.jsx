@@ -41,9 +41,12 @@ function ChatContainer() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const isMessageFromCurrentUser = (msg) => {
-    return msg.sender?._id === currentUser?._id;
-  };
+
+  // hard to
+const isMessageFromCurrentUser = (msg) => {
+  if (!msg?.sender || !currentUser?._id) return false;
+  return msg.sender._id === currentUser._id || msg.sender === currentUser._id;
+};
 
 
   useEffect(() => {

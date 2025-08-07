@@ -1,64 +1,100 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from "react-hot-toast"
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  redirect,
+} from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import toast, { Toaster } from 'react-hot-toast';
+
 import Home from './pages/Homepage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import UserProfile from './pages/UserProfile';
-import { useDispatch } from 'react-redux';
-import { logout, loginSuccess } from './redux/slices/authSlice';
-import ProtectedRoute from './utils/ProtectedRoute.jsx';
+
+import { logout, setCurrentUser } from './redux/slices/authSlice';
+import ProtectedRoute from './utils/ProtectedRoute';
+
+// Optional: You can create a routes.js later for route constants
+const ROUTES = {
+  LOGIN: '/login',
+  SIGNUP: '/signup',
+  HOME: '/',
+  PROFILE: '/profile',
+};
 
 function App() {
   const dispatch = useDispatch();
-  // const { isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem("token");
+    const fetchUser = async () => {
+      const token = localStorage.getItem('token');
       if (!token) return;
 
       try {
-        const res = await fetch("http://localhost:5000/auth/whoami", {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await fetch('http://localhost:5000/auth/whoami', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-        const data = await res.json();
 
-        if (res.ok) {
-          dispatch(loginSuccess({ user: data.user, token }));
+        const data = await res.json();
+        // console.log(data);  //works fine
+        if (res.ok && data) {
+          dispatch(setCurrentUser(data));
         } else {
-          dispatch(logout());
+          // dispatch(logout());
+          // no need to llogout
+          toast.error("data: ",data)
         }
       } catch (err) {
-        dispatch(logout());
+        toast.error('Auth check failed:', err);
+        console.error('Auth check failed:', err);
+        // dispatch(logout());
+
+        redirect("/")
       }
     };
 
-    checkAuth();
-  }, []);
+    fetchUser();
+  }, [dispatch]);
 
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Home />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <UserProfile />
-          </ProtectedRoute>
-        } />
-
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-
+      {/* Toast messages */}
       <Toaster position="top-right" reverseOrder={false} />
+
+      {/* Application Routes */}
+      <Routes>
+        {/* Public Routes */}
+        <Route path={ROUTES.LOGIN} element={<Login />} />
+        <Route path={ROUTES.SIGNUP} element={<Signup />} />
+
+        {/* Protected Routes */}
+        <Route
+          path={ROUTES.HOME}
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path={ROUTES.PROFILE}
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to={ROUTES.HOME} />} />
+      </Routes>
     </Router>
   );
 }

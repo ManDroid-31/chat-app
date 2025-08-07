@@ -1,8 +1,6 @@
-server/src/dupesogs-firebase-adminsdk-fbsvc-*.json
+
 # Firebase service account key
-*.json
+# *.json
 !firebase-messaging-sw.js # <-- Keep if needed
+server/firebase-adminsdk.json
 *.env
-.env*
-echo "server/src/*.json" >> .gitignore
-server/src/*.json

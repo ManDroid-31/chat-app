@@ -1,15 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from "react-hot-toast"
-
-// Import your pages/components
-import Home from './pages/Homepage'; // Main chat page
+import Home from './pages/Homepage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import UserProfile from './pages/UserProfile';
 
 function App() {
-  const isAuthenticated = true; //redux state here
+  const isAuthenticated = true;
 
   return (
     <Router>

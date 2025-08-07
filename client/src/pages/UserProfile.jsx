@@ -99,7 +99,7 @@ function UserProfile() {
         toast.error(data.message || "Update failed");
       }
     } catch (err) {
-      toast.error("Server error");
+      toast.error("Server error: ",err.message);
     }
   };
 

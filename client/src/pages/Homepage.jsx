@@ -6,11 +6,7 @@ function Home() {
 	return (
 		<>
 			<div className="fixed inset-0 bg-gray-100 flex">
-				
-				
 				<Sidebar />
-
-				{/* Main Chat Area */}
 				<ChatContainer />
 			</div>
 

@@ -12,7 +12,7 @@ export const verifyToken = (req, res, next) => {
   try{
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
-    console.log("userId via auth middleware: ",req.user)
+    console.log("Auth middleware hit")
     next();
   }catch(err){
     return res.status(403).json({ error: "Invalid token" });

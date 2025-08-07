@@ -6,12 +6,9 @@ import { deleteMessage, getMessages, postMessage } from "../controllers/message.
 
 const router = express.Router();
 
-// :id of the reciever
-router.get("/:id", verifyToken, getMessages);
-
-router.post("/", verifyToken, postMessage);
-
-// id of the message to delete
-router.delete("/:messageId", verifyToken, deleteMessage);
+router.post('/send', verifyToken, postMessage);
+router.get('/:userId', verifyToken, getMessages);
+router.delete('/:messageId', verifyToken, deleteMessage);
+// router.put('/:userId', markMessagesAsRead); // TODO
 
 export default router;

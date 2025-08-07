@@ -1,5 +1,12 @@
 import admin from "firebase-admin";
-import serviceAccount from "../dupesogs-firebase-adminsdk-fbsvc-3d841ef93a.json" assert { type: "json" };
+import dotenv from "dotenv";
+dotenv.config();
+import fs from "fs"
+// import serviceAccount from "../dupesogs-firebase-adminsdk-fbsvc-3d841ef93a.json" assert { type: "json" };
+
+const serviceAccount = JSON.parse(
+  fs.readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH, "utf8")
+);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

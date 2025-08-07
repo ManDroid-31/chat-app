@@ -36,7 +36,7 @@ export const io = new SocketIoServer(server, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-dbConnect();
+( async () => await dbConnect())();
 
 app.use("/messages", messageRouter);
 app.use("/auth", authRouter);

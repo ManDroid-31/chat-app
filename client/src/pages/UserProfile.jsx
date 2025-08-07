@@ -16,6 +16,8 @@ function UserProfile() {
 
   const dispatch = useDispatch();
 
+  const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"
+
 
   useEffect(() => {
     const handleOnline = () => setOnline(true);
@@ -37,7 +39,7 @@ function UserProfile() {
       }
 
       try {
-        const res = await fetch("http://localhost:5000/auth/whoami", {
+        const res = await fetch(`${BASE_URL}/auth/whoami`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -70,7 +72,7 @@ function UserProfile() {
   useEffect(() => {
     const fetchAvatars = async () => {
       try {
-        const res = await fetch("http://localhost:5000/auth/getAvatars");
+        const res = await fetch(`${BASE_URL}/auth/getAvatars`);
         const data = await res.json();
         if (Array.isArray(data)) setAvatars(data);
       } catch (err) {
@@ -86,7 +88,7 @@ function UserProfile() {
     if (!token) return toast.error("Token expired");
 
     try {
-      const res = await fetch("http://localhost:5000/auth/updateProfile", {
+      const res = await fetch(`${BASE_URL}/auth/updateProfile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

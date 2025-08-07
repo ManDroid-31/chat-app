@@ -10,10 +10,12 @@ function Signup() {
     const [avatars, setAvatars] = useState([]);
     const navigate = useNavigate();
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"
+
     useEffect(() => {
         const fetchAvatars = async () => {
             try {
-                const res = await fetch("http://localhost:5000/auth/getAvatars");
+                const res = await fetch(`${BASE_URL}/auth/getAvatars`);
                 const data = await res.json();
                 // console.log(data) //returns array or urls
                 if (Array.isArray(data)) {
@@ -32,7 +34,7 @@ function Signup() {
 
         if (username && email && password && avatar_url) {
             try {
-                const res = await fetch("http://localhost:5000/auth/signup", {
+                const res = await fetch(`${BASE_URL}/auth/signup`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ username, email, password, avatar_url }),

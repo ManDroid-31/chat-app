@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { socket } from '../../socket';
 
-const API_BASE = 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 export const fetchMessages = createAsyncThunk(
   'chat/fetchMessages', 

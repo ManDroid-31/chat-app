@@ -32,7 +32,7 @@ function App() {
   const { currentUser } = useSelector((state) => state.auth)
   const navigate = useNavigate();
 
-
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/auth/whoami';
   // set currentUser
   useEffect(() => {
     const fetchUser = async () => {
@@ -40,7 +40,7 @@ function App() {
       if (!token) return;
 
       try {
-        const res = await fetch('http://localhost:5000/auth/whoami', {
+        const res = await fetch(BACKEND_URL, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

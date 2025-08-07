@@ -10,6 +10,10 @@ function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch()
 
+
+
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -20,7 +24,7 @@ function Login() {
 
     try {
       toast.loading("Logging in...");
-      const res = await fetch("http://localhost:5000/auth/login", {
+      const res = await fetch(BACKEND_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -36,7 +40,7 @@ function Login() {
         // console.log(data.token) //works fine 
         localStorage.setItem("token", data.token);
         toast.success("Login successful 🎉");
-        dispatch(loginSuccess({user: data.user, token: data.token}))
+        dispatch(loginSuccess({ user: data.user, token: data.token }))
         navigate("/");
       } else {
         toast.error(data.message || "Invalid credentials");

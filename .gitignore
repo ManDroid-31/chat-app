@@ -4,3 +4,5 @@ server/src/dupesogs-firebase-adminsdk-fbsvc-*.json
 !firebase-messaging-sw.js # <-- Keep if needed
 *.env
 .env*
+echo "server/src/*.json" >> .gitignore
+server/src/*.json

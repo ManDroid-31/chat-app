@@ -29,3 +29,7 @@ D:\Projects\Arishti chat app - Copy\server\firebase-adminsdk.json
 ./firebase-adminsdk.json
 firebase-adminsdk.json
 firebase-messaging-sw.js
+
+# Firebase service account key
+*.json
+!firebase-messaging-sw.js # <-- Keep if needed

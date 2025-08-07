@@ -1,1 +1,6 @@
 server/src/dupesogs-firebase-adminsdk-fbsvc-*.json
+# Firebase service account key
+*.json
+!firebase-messaging-sw.js # <-- Keep if needed
+*.env
+.env*

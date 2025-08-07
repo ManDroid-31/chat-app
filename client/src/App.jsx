@@ -5,7 +5,6 @@ import {
   Route,
   Navigate,
   useNavigate,
-  redirect,
 } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import toast, { Toaster } from 'react-hot-toast';
@@ -18,8 +17,9 @@ import UserProfile from './pages/UserProfile';
 import { logout, setCurrentUser } from './redux/slices/authSlice';
 import ProtectedRoute from './utils/ProtectedRoute';
 import { connectSocket, disconnectSocket, socket } from './socket';
+import { getToken } from 'firebase/messaging';
+import { messaging } from './firebase';
 
-// Optional: You can create a routes.js later for route constants
 const ROUTES = {
   LOGIN: '/login',
   SIGNUP: '/signup',
@@ -32,6 +32,8 @@ function App() {
   const { currentUser } = useSelector((state) => state.auth)
   const navigate = useNavigate();
 
+
+  // set currentUser
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem('token');
@@ -64,12 +66,33 @@ function App() {
     fetchUser();
   }, [dispatch, navigate]);
 
+
+
+    useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const fcmToken = await getToken(messaging, {
+          vapidKey: "BDJ1f52yL1uuOMmAwarpixhR6LGMygQ8gQaNCwW5AG3Zko4nAHfWvqrMkDglVDNuXsPsWbS9RhKiXA4BPJq9I-U"
+        });
+
+        if (fcmToken) {
+          const userId = currentUser?._id
+          socket.emit("register_fcm_token", { userId, fcmToken });
+          // console.log("socket called");
+        }
+      } catch (err) {
+        console.error("Error fetching FCM token:", err);
+      }
+    };
+
+    fetchToken();
+  }, [currentUser]);
+
+
   useEffect(() => {
     if (!socket.connected && currentUser?._id) {
       connectSocket(currentUser._id);
     }
-
-
     return () => {
       disconnectSocket();
     };
@@ -78,16 +101,13 @@ function App() {
   return (
 
     <>
-      {/* Toast messages */}
       <Toaster position="top-right" reverseOrder={false} />
 
-      {/* Application Routes */}
       <Routes>
-        {/* Public Routes */}
         <Route path={ROUTES.LOGIN} element={<Login />} />
         <Route path={ROUTES.SIGNUP} element={<Signup />} />
 
-        {/* Protected Routes */}
+
         <Route
           path={ROUTES.HOME}
           element={
@@ -106,7 +126,6 @@ function App() {
           }
         />
 
-        {/* Catch-all */}
         <Route path="*" element={<Navigate to={ROUTES.HOME} />} />
       </Routes>
     </>

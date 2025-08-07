@@ -5,6 +5,7 @@ import ChatHeader from "./ChatHeader";
 import ChatTopbar from "./ChatTopBar.jsx";
 import MessageBox from "./MessageBox.jsx";
 import { connectSocket, disconnectSocket, socket } from "../socket.js";
+import { toast } from "react-hot-toast";
 
 function ChatContainer() {
   const dispatch = useDispatch();
@@ -66,19 +67,34 @@ function ChatContainer() {
   useEffect(() => {
     const handleReceiveMessage = (data) => {
       console.log(data);
-      dispatch(addMessage(data));
+
+      // doest work for now
+      if (data.receiver === currentUser?._id && data.sender !== selectedUser?._id) {
+        toast.success("got a message")
+        // toast.custom((t) => (
+        //   <div className="bg-white shadow-md rounded-md p-4 text-black">
+        //     <p>You have a new message from:</p>
+        //     <strong>{data.sender?.username || "Unknown User"}</strong>
+        //     <button onClick={() => toast.dismiss(t.id)}>Dismiss</button>
+        //   </div>
+        // ));
+        // toast.success("have a message")
+      }
+      if (data.sender === currentUser?._id || data.sender === selectedUser?._id) {
+        dispatch(addMessage(data));
+      }
     };
 
     socket.on("receive-message", handleReceiveMessage);
 
-    console.log("socket called");
+    // console.log("socket called");
 
     return () => {
       socket.off("receive-message", handleReceiveMessage);
     };
   }, [dispatch]);
 
-  
+
 
   useEffect(() => {
     if (selectedUser?._id) {

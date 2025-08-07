@@ -1,15 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMessages, sendMessageToServer } from "../redux/slices/chatSlice";
+import { addMessage, fetchMessages, sendMessageToServer } from "../redux/slices/chatSlice";
 import ChatHeader from "./ChatHeader";
 import ChatTopbar from "./ChatTopBar.jsx";
 import MessageBox from "./MessageBox.jsx";
+import { connectSocket, disconnectSocket, socket } from "../socket.js";
 
 function ChatContainer() {
   const dispatch = useDispatch();
   const messagesEndRef = useRef(null);
   const [messageText, setMessageText] = useState("");
-  
+  const [sendMessage, setSending] = useState(false)
+
   const { selectedUser, messages, loading, sendingMessage, error } = useSelector(state => state.chat);
   const { currentUser } = useSelector(state => state.auth);
 
@@ -25,6 +27,7 @@ function ChatContainer() {
     try {
       await dispatch(sendMessageToServer(messageData)).unwrap();
       setMessageText("");
+      setSending(true)
     } catch (error) {
       console.error('Failed to send message:', error);
     }
@@ -43,11 +46,39 @@ function ChatContainer() {
 
 
   // hard to
-const isMessageFromCurrentUser = (msg) => {
-  if (!msg?.sender || !currentUser?._id) return false;
-  return msg.sender._id === currentUser._id || msg.sender === currentUser._id;
-};
+  const isMessageFromCurrentUser = (msg) => {
+    if (!msg?.sender || !currentUser?._id) return false;
+    return msg.sender._id === currentUser._id || msg.sender === currentUser._id;
+  };
 
+
+  useEffect(() => {
+    if (!socket.connected && currentUser?._id) {
+      connectSocket(currentUser._id);
+    }
+    return () => {
+      disconnectSocket();
+    };
+  }, [currentUser?._id]);
+
+
+  // socket to subscribing message
+  useEffect(() => {
+    const handleReceiveMessage = (data) => {
+      console.log(data);
+      dispatch(addMessage(data));
+    };
+
+    socket.on("receive-message", handleReceiveMessage);
+
+    console.log("socket called");
+
+    return () => {
+      socket.off("receive-message", handleReceiveMessage);
+    };
+  }, [dispatch]);
+
+  
 
   useEffect(() => {
     if (selectedUser?._id) {
@@ -59,6 +90,9 @@ const isMessageFromCurrentUser = (msg) => {
     scrollToLatestMessage();
     // console.log(messages); //array of obj and can be mapped 
   }, [messages]);
+
+
+
 
   if (!selectedUser) {
     return (
@@ -87,12 +121,12 @@ const isMessageFromCurrentUser = (msg) => {
             No messages yet. Start the conversation!
           </div>
         ) : (
-          messages.map((msg) => (
+          messages.map((msg, idx) => (
             <MessageBox
-              key={msg._id || msg.id}
+              key={msg?._id || msg?.id || idx}
               message={msg}
               isSender={isMessageFromCurrentUser(msg)}
-              onDelete={() => {}}
+              onDelete={() => { }}
             />
           ))
         )}

@@ -2,14 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsers } from '../redux/slices/authSlice';
 import { selectUser as setSelectedUser } from '../redux/slices/chatSlice';
+import { connectSocket, disconnectSocket, socket } from '../socket';
 
 function Sidebar() {
   const dispatch = useDispatch();
   const { users, loading } = useSelector(state => state.auth);
   const { selectedUser } = useSelector(state => state.chat);
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState([])
+
+  const { currentUser } = useSelector((state) => state.auth);
+
 
   useEffect(() => {
     dispatch(fetchUsers());
@@ -17,16 +22,21 @@ function Sidebar() {
 
   const getFilteredUsers = () => {
     if (!users) return [];
-    
-    return users.filter(user => {
-      const matchesSearch = user.username
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      const onlinefilter = !showOnlineOnly || user.isOnline;
-      
-      return matchesSearch && onlinefilter;
-    });
+
+    return users
+      .map(user => ({
+        ...user,
+        isOnline: onlineUsers.includes(user._id),
+      }))
+      .filter(user => {
+        const matchesSearch = user.username
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+        const onlineFilter = !showOnlineOnly || user.isOnline;
+        return matchesSearch && onlineFilter;
+      });
   };
+
 
   const handleUserSelect = (user) => {
     dispatch(setSelectedUser(user));
@@ -40,6 +50,27 @@ function Sidebar() {
   const isUserSelected = (user) => {
     return selectedUser?._id === user._id;
   };
+
+  useEffect(() => {
+    if (!socket.connected && currentUser?._id) {
+      connectSocket(currentUser._id);
+    }
+    return () => {
+      disconnectSocket();
+    };
+  }, [currentUser?._id]);
+
+  useEffect(() => {
+    socket.on("take-online-users", (userIds) => {
+      setOnlineUsers(userIds);
+    });
+
+    return () => {
+      socket.off("take-online-users");
+    };
+  }, []);
+
+
 
   const filteredUsers = getFilteredUsers();
 
@@ -65,11 +96,10 @@ function Sidebar() {
         <button
           id="onlineToggle"
           onClick={toggleOnlineFilter}
-          className={`px-3 py-1 rounded-xl font-medium transition ${
-            showOnlineOnly 
-              ? 'bg-purple-600 text-white' 
-              : 'bg-gray-200 text-gray-700'
-          }`}
+          className={`px-3 py-1 rounded-xl font-medium transition ${showOnlineOnly
+            ? 'bg-purple-600 text-white'
+            : 'bg-gray-200 text-gray-700'
+            }`}
         >
           {showOnlineOnly ? 'On' : 'Off'}
         </button>
@@ -83,11 +113,10 @@ function Sidebar() {
             <div
               key={user._id}
               onClick={() => handleUserSelect(user)}
-              className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition ${
-                isUserSelected(user)
-                  ? 'bg-purple-100 border-l-4 border-purple-500'
-                  : 'hover:bg-gray-100'
-              }`}
+              className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition ${isUserSelected(user)
+                ? 'bg-purple-100 border-l-4 border-purple-500'
+                : 'hover:bg-gray-100'
+                }`}
             >
               <img
                 src={user.avatar_url}
@@ -99,9 +128,8 @@ function Sidebar() {
                 <p className="text-sm text-gray-500">{user.role || 'Member'}</p>
               </div>
               <span
-                className={`h-3 w-3 rounded-full ${
-                  user.isOnline ? 'bg-green-500' : 'bg-gray-400'
-                }`}
+                className={`h-3 w-3 rounded-full ${user.isOnline ? 'bg-green-500' : 'bg-gray-400'
+                  }`}
               />
             </div>
           ))

@@ -7,7 +7,7 @@ import {
   useNavigate,
   redirect,
 } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import toast, { Toaster } from 'react-hot-toast';
 
 import Home from './pages/Homepage';
@@ -17,6 +17,7 @@ import UserProfile from './pages/UserProfile';
 
 import { logout, setCurrentUser } from './redux/slices/authSlice';
 import ProtectedRoute from './utils/ProtectedRoute';
+import { connectSocket, disconnectSocket, socket } from './socket';
 
 // Optional: You can create a routes.js later for route constants
 const ROUTES = {
@@ -28,6 +29,8 @@ const ROUTES = {
 
 function App() {
   const dispatch = useDispatch();
+  const { currentUser } = useSelector((state) => state.auth)
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -48,22 +51,33 @@ function App() {
         } else {
           // dispatch(logout());
           // no need to llogout
-          toast.error("data: ",data)
+          toast.error("data: ", data)
         }
       } catch (err) {
-        toast.error('Auth check failed:', err);
+        toast.error('Auth check failed');
         console.error('Auth check failed:', err);
-        // dispatch(logout());
-
-        redirect("/")
+        navigate('/');
       }
+
     };
 
     fetchUser();
-  }, [dispatch]);
+  }, [dispatch, navigate]);
+
+  useEffect(() => {
+    if (!socket.connected && currentUser?._id) {
+      connectSocket(currentUser._id);
+    }
+
+
+    return () => {
+      disconnectSocket();
+    };
+  }, [currentUser?._id]);
 
   return (
-    <Router>
+
+    <>
       {/* Toast messages */}
       <Toaster position="top-right" reverseOrder={false} />
 
@@ -95,7 +109,7 @@ function App() {
         {/* Catch-all */}
         <Route path="*" element={<Navigate to={ROUTES.HOME} />} />
       </Routes>
-    </Router>
+    </>
   );
 }
 

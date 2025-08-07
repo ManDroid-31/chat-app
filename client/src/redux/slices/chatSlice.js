@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { socket } from '../../socket';
 
 const API_BASE = 'http://localhost:5000';
 
@@ -29,7 +30,8 @@ export const fetchMessages = createAsyncThunk(
 
 export const sendMessageToServer = createAsyncThunk(
   'chat/sendMessage',
-  async (messageData, { rejectWithValue }) => {
+  async (messageData, {rejectWithValue }) => {
+    // console.log(messageData)
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(`${API_BASE}/messages/send`, {
@@ -42,7 +44,8 @@ export const sendMessageToServer = createAsyncThunk(
       });
       
       const data = await response.json();
-      
+      console.log(data); //wors and directy sends object
+      socket.emit("send-message", data);
       if (!response.ok) {
         return rejectWithValue(data.error || 'Failed to send message');
       }
@@ -72,7 +75,7 @@ const chatSlice = createSlice({
     setMessages: (state, action) => {
       state.messages = action.payload;
     },
-    sendMessage: (state, action) => {
+    addMessage: (state, action) => {
       state.messages.push(action.payload);
     },
     clearMessages: (state) => {

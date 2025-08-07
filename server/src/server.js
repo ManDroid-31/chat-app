@@ -22,7 +22,7 @@ const server = http.createServer(app);
 
 app.use(
   cors({
-    origin: FRONTEND_URL,
+    origin:[ FRONTEND_URL, "https://chat-app-lyart-ten.vercel.app"],
     credentials: true
   }
   ));

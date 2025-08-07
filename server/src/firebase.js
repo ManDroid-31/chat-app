@@ -2,6 +2,7 @@ import admin from "firebase-admin";
 import dotenv from "dotenv";
 dotenv.config();
 import fs from "fs"
+import { assert } from "console";
 // import serviceAccount from "../dupesogs-firebase-adminsdk-fbsvc-3d841ef93a.json" assert { type: "json" };
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);

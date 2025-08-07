@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addMessage, fetchMessages, sendMessageToServer } from "../redux/slices/chatSlice";
-import ChatHeader from "./ChatHeader";
-import ChatTopbar from "./ChatTopBar.jsx";
+import { addMessage, fetchMessages, sendMessageToServer } from "../redux/slices/chatSlice.js";
+import ChatHeader from "./ChatHeader.jsx";
+import ChatTopbar from "./ChatTopbar.jsx";
 import MessageBox from "./MessageBox.jsx";
 import { connectSocket, disconnectSocket, socket } from "../socket.js";
 import { toast } from "react-hot-toast";

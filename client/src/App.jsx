@@ -32,7 +32,7 @@ function App() {
   const { currentUser } = useSelector((state) => state.auth)
   const navigate = useNavigate();
 
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/auth/whoami';
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
   // set currentUser
   useEffect(() => {
     const fetchUser = async () => {
@@ -51,9 +51,7 @@ function App() {
         if (res.ok && data) {
           dispatch(setCurrentUser(data));
         } else {
-          // dispatch(logout());
-          // no need to llogout
-          toast.error("data: ", data)
+          dispatch(setCurrentUser(null)); // mark as checked but unauthenticated
         }
       } catch (err) {
         toast.error('Auth check failed');
@@ -67,7 +65,7 @@ function App() {
 
 
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchToken = async () => {
       try {
         const fcmToken = await getToken(messaging, {

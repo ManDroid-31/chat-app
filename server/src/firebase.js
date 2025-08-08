@@ -1,22 +1,22 @@
+// firebase.js
 import admin from "firebase-admin";
-import fs from 'fs';
-import dotenv from "dotenv";
+import { config } from "dotenv";
+config();
+// import serviceAccount from "./serviceAccountKey.json" assert { type: "json" };
 
-dotenv.config();
+const json = JSON.stringify(process.env.FIREBASE_CONFIG);
+const temp = JSON.parse(json);
+console.log("serviceAccount",JSON.parse(temp));
 
-// Use the JSON file approach instead of environment variable
+const serviceAccount = JSON.parse(temp);
 
-const firebaseConfig = process.env.FIREBASE_CONFIG;
-const serviceAccount = JSON.parse(firebaseConfig);
+serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
 
-// // Initialize Firebase Admin only if not already initialized
-// if (!admin.apps.length) {
-//   admin.initializeApp({
-//     credential: admin.credential.cert(firebaseConfig),
-//   });
-// }
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
-// export { admin };
+export const messaging = admin.messaging();
 
 export const sendPushNotification = async (fcmToken, message) => {
   try {

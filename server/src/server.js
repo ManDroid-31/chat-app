@@ -22,7 +22,7 @@ app.use(cors({
   origin: ["https://chat-app-lyart-ten.vercel.app", "http://localhost:5173"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+  credentials: "include"
 }));
 
 // for preflight
@@ -32,7 +32,7 @@ export const io = new SocketIoServer(server, {
   cors: {
     origin: ["https://chat-app-lyart-ten.vercel.app", "http://localhost:5173"],
     transports: ["websocket"],
-    credentials: true
+    credentials: "include"
   },
 });
 

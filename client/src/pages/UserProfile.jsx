@@ -2,8 +2,56 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
-import { DoorClosed, DoorOpenIcon } from 'lucide-react';
+import { Bell, DoorClosed, DoorOpenIcon } from 'lucide-react';
 import { logout } from '../redux/slices/authSlice';
+
+
+
+const BellButton = () => {
+  const [showBell, setShowBell] = useState(false);
+
+  useEffect(() => {
+    updatePermissionState();
+  }, []);
+
+  const updatePermissionState = () => {
+    if (typeof Notification !== "undefined") {
+      const permission = Notification.permission;
+      setShowBell(permission === "default" || permission === "denied");
+    } else {
+      setShowBell(false);
+    }
+  };
+
+  const requestPermission = () => {
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") {
+        setShowBell(false);
+      } else {
+        setShowBell(true);
+      }
+    });
+  };
+
+  if (!showBell) return null;
+
+  return (
+    <button
+      onClick={requestPermission}
+      style={{
+        fontSize: "24px",
+        cursor: "pointer",
+        background: "none",
+        border: "none",
+      }}
+      aria-label="Enable notifications"
+      title="Enable notifications"
+    >
+      🔔
+    </button>
+  );
+};
+
 
 function UserProfile() {
   const [user, setUser] = useState(null);
@@ -30,6 +78,7 @@ function UserProfile() {
     };
   }, []);
 
+
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem("token");
@@ -40,7 +89,7 @@ function UserProfile() {
 
       try {
         const res = await fetch(`${BASE_URL}/auth/whoami`, {
-          credentials: true,
+          credentials: "include",
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -90,7 +139,7 @@ function UserProfile() {
 
     try {
       const res = await fetch(`${BASE_URL}/auth/updateProfile`, {
-        credentials: true,
+        credentials: "include",
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -108,7 +157,7 @@ function UserProfile() {
         toast.error(data.message || "Update failed");
       }
     } catch (err) {
-      toast.error("Server error: ",err.message);
+      toast.error("Server error: ", err.message);
     }
   };
 
@@ -123,25 +172,30 @@ function UserProfile() {
         <h1 className="text-2xl font-bold text-purple-600">My Profile</h1>
         <div className='flex gap-4'>
           <button
-          className="bg-purple-600 text-white px-2 h-10 rounded-xl hover:cursor-pointer hover:bg-purple-700 transition"
-          onClick={() => navigate("/")}
-        >
-          Back to Chat
-        </button>
-        <button
-          className="bg-purple-600 text-white px-4 py-2 rounded-xl hover:cursor-pointer hover:bg-purple-700 transition"
-          onClick={
-            () => {
-              dispatch(logout());
-              navigate("/login");
+            className="bg-purple-600 text-white px-2 h-10 rounded-xl hover:cursor-pointer hover:bg-purple-700 transition"
+            onClick={() => navigate("/")}
+          >
+            Back to Chat
+          </button>
+
+
+          <BellButton />
+
+
+          <button
+            className="bg-purple-600 text-white px-4 py-2 rounded-xl hover:cursor-pointer hover:bg-purple-700 transition"
+            onClick={
+              () => {
+                dispatch(logout());
+                navigate("/login");
+              }
             }
-          }
-        >
-          <div className='flex gap-1 align-middle items-center justify-center'>
-            <DoorOpenIcon height={16} width={16} stroke='red' />
-            Logout
-          </div>
-        </button>
+          >
+            <div className='flex gap-1 align-middle items-center justify-center'>
+              <DoorOpenIcon height={16} width={16} stroke='red' />
+              Logout
+            </div>
+          </button>
         </div>
       </div>
 
@@ -197,9 +251,8 @@ function UserProfile() {
                   src={url}
                   alt={`avatar-${idx}`}
                   onClick={() => setFormData({ ...formData, avatar_url: url })}
-                  className={`w-12 h-12 rounded-full cursor-pointer border-2 transition-all duration-200 ${
-                    formData.avatar_url === url ? "border-purple-600 scale-110" : "border-transparent"
-                  }`}
+                  className={`w-12 h-12 rounded-full cursor-pointer border-2 transition-all duration-200 ${formData.avatar_url === url ? "border-purple-600 scale-110" : "border-transparent"
+                    }`}
                 />
               ))}
             </div>

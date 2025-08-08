@@ -9,7 +9,7 @@ export const fetchMessages = createAsyncThunk(
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(`${API_BASE}/messages/${userId}`, {
-        credentials: true,
+        credentials: "include",
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

@@ -7,7 +7,7 @@ export const fetchUsers = createAsyncThunk('auth/fetchUsers', async (_, thunkAPI
   try {
     const token = localStorage.getItem("token");
     const response = await fetch(`${BASE_URL}/auth/getUsers`, {
-      credentials: true,
+      credentials: "include",
       headers: { Authorization: `Bearer ${token}` },
     });
 

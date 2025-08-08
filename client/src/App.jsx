@@ -41,7 +41,7 @@ function App() {
 
       try {
         const res = await fetch(`${BACKEND_URL}/auth/whoami`, {
-          credentials: true,
+          credentials: "include",
           headers: {
             Authorization: `Bearer ${token}`,
           },

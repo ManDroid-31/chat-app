@@ -40,7 +40,7 @@ function App() {
       if (!token) return;
 
       try {
-        const res = await fetch(BACKEND_URL, {
+        const res = await fetch(`${BACKEND_URL}/auth/whoami`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -63,7 +63,7 @@ function App() {
     };
 
     fetchUser();
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, BACKEND_URL]);
 
 
 

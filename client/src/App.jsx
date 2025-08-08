@@ -60,7 +60,6 @@ function App() {
         console.error('Auth check failed:', err);
         navigate('/');
       }
-
     };
 
     fetchUser();

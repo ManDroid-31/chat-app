@@ -49,6 +49,9 @@ function ChatContainer() {
   // hard to
   const isMessageFromCurrentUser = (msg) => {
     if (!msg?.sender || !currentUser?._id) return false;
+    if (msg?.sender !== currentUser?._id || msg?.sender !== selectedUser?._id){
+      return false;
+    }
     return msg.sender._id === currentUser._id || msg.sender === currentUser._id;
   };
 
@@ -118,7 +121,7 @@ function ChatContainer() {
     );
   }
 
-  return (<>
+  return (
     <div className="shadow-2xl hover:shadow-yellow-500 transition flex-1 flex flex-col m-4 p-4 rounded-2xl bg-gray-50 h-screen">
       <ChatHeader onToggleTheme={() => alert("Theme toggled")} />
       <ChatTopbar selectedUser={selectedUser} />
@@ -168,7 +171,6 @@ function ChatContainer() {
         </button>
       </div>
     </div>
-    </>
   );
 }
 

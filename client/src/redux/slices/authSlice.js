@@ -1,42 +1,48 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"
 
-export const fetchUsers = createAsyncThunk('auth/fetchUsers', async (_, thunkAPI) => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${BASE_URL}/auth/getUsers`, {
-      credentials: "include",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+export const fetchUsers = createAsyncThunk(
+  'auth/fetchUsers', 
+  async (_, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return thunkAPI.rejectWithValue('No token available');
+      }
 
-    const data = await response.json();
+      const response = await fetch(`${BASE_URL}/auth/getUsers`, {
+        credentials: "include",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (!response.ok) {
-      return thunkAPI.rejectWithValue(data.message || 'Failed to fetch users');
+      const data = await response.json();
+
+      if (!response.ok) {
+        return thunkAPI.rejectWithValue(data.message || 'Failed to fetch users');
+      }
+
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
     }
-
-    return data;
-  } catch (error) {
-    return thunkAPI.rejectWithValue(error.message);
   }
-});
+);
 
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
     users: [],
-    currentUser: undefined,
+    currentUser: undefined, // undefined = checking, null = not authenticated
     token: localStorage.getItem("token"),
-    isAuthenticated: !!localStorage.getItem("token"),
+    isAuthenticated: false,
     loading: false,
     error: null,
   },
   reducers: {
     setCurrentUser: (state, action) => {
       state.currentUser = action.payload;
-      state.isAuthenticated = true;
+      state.isAuthenticated = !!action.payload;
     },
     loginSuccess: (state, action) => {
       state.currentUser = action.payload.user;
@@ -48,6 +54,7 @@ const authSlice = createSlice({
       state.currentUser = null;
       state.token = null;
       state.isAuthenticated = false;
+      state.users = [];
       localStorage.removeItem('token');
     },
     clearError: (state) => {
@@ -63,12 +70,10 @@ const authSlice = createSlice({
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
         state.users = action.payload;
-        state.isAuthenticated = true;
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-        state.isAuthenticated = false;
       });
   }
 });

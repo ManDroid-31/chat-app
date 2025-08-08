@@ -6,10 +6,10 @@ function Home() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detect screen size for mobile/desktop
+  
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768); // Tailwind md breakpoint
+      setIsMobile(window.innerWidth < 768); // ttailwind md breakpoint
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -18,7 +18,7 @@ function Home() {
 
   return (
     <div className="flex max-h-screen max-w-screen w-full">
-      {/* Sidebar */}
+      
       <div
         className={`
           ${isMobile ? (showSidebar ? "block" : "hidden") : "block"} 
@@ -28,7 +28,7 @@ function Home() {
         <Sidebar onUserSelect={() => isMobile && setShowSidebar(false)} />
       </div>
 
-      {/* Chat container */}
+      
       <div
         className={`
           ${isMobile ? (showSidebar ? "hidden" : "block") : "block"} 

@@ -29,15 +29,19 @@ const ROUTES = {
 
 function App() {
   const dispatch = useDispatch();
-  const { currentUser } = useSelector((state) => state.auth)
+  const { currentUser, isAuthenticated } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-  // set currentUser
+
+  // Authentication check - only run once
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        dispatch(setCurrentUser(null));
+        return;
+      }
 
       try {
         const res = await fetch(`${BACKEND_URL}/auth/whoami`, {
@@ -48,63 +52,69 @@ function App() {
         });
 
         const data = await res.json();
-        // console.log(data);  //works fine
+        
         if (res.ok && data) {
           dispatch(setCurrentUser(data));
         } else {
-          dispatch(setCurrentUser(null)); // mark as checked but unauthenticated
+          dispatch(setCurrentUser(null));
+          localStorage.removeItem('token');
         }
       } catch (err) {
-        toast.error('Auth check failed');
         console.error('Auth check failed:', err);
-        navigate('/');
+        dispatch(setCurrentUser(null));
+        localStorage.removeItem('token');
       }
     };
 
     fetchUser();
-  }, [dispatch, navigate, BACKEND_URL]);
+  }, [dispatch, BACKEND_URL]);
 
-
-
+  // FCM Token registration - only when currentUser is available
   useEffect(() => {
-    const fetchToken = async () => {
+    const registerFCMToken = async () => {
+      if (!currentUser?._id) return;
+      
       try {
         const fcmToken = await getToken(messaging, {
           vapidKey: "BDJ1f52yL1uuOMmAwarpixhR6LGMygQ8gQaNCwW5AG3Zko4nAHfWvqrMkDglVDNuXsPsWbS9RhKiXA4BPJq9I-U"
         });
 
-        if (fcmToken) {
-          const userId = currentUser?._id
-          socket.emit("register_fcm_token", { userId, fcmToken });
-          // console.log("socket called");
+        if (fcmToken && socket) {
+          socket.emit("register_fcm_token", { 
+            userId: currentUser._id, 
+            fcmToken 
+          });
         }
       } catch (err) {
         console.error("Error fetching FCM token:", err);
       }
     };
 
-    fetchToken();
-  }, [currentUser]);
+    registerFCMToken();
+  }, [currentUser?._id]);
 
-
+  // Socket connection - only when authenticated
   useEffect(() => {
-    if (!socket.connected && currentUser?._id) {
-      connectSocket(currentUser._id);
+    if (isAuthenticated && currentUser?._id) {
+      if (!socket.connected) {
+        connectSocket(currentUser._id);
+      }
+    } else {
+      disconnectSocket();
     }
+
     return () => {
       disconnectSocket();
     };
-  }, [currentUser?._id]);
+  }, [isAuthenticated, currentUser?._id]);
 
   return (
-
     <>
       <Toaster position="top-right" reverseOrder={false} />
 
       <Routes>
         <Route path={ROUTES.LOGIN} element={<Login />} />
         <Route path={ROUTES.SIGNUP} element={<Signup />} />
-
 
         <Route
           path={ROUTES.HOME}

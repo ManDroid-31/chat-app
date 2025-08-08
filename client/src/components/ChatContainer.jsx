@@ -118,9 +118,9 @@ function ChatContainer() {
     );
   }
 
-  return (
-    <div className="shadow-2xl hover:shadow-yellow-500 transition flex-1 flex flex-col m-4 p-4 rounded-2xl bg-gray-50 h-screen">
+  return (<>
       <ChatHeader onToggleTheme={() => alert("Theme toggled")} />
+    <div className="shadow-2xl hover:shadow-yellow-500 transition flex-1 flex flex-col m-4 p-4 rounded-2xl bg-gray-50 h-screen">
       <ChatTopbar selectedUser={selectedUser} />
 
       <main className="flex-1 p-6 flex flex-col bg-white rounded-b-xl shadow-inner overflow-y-auto space-y-4">
@@ -168,6 +168,7 @@ function ChatContainer() {
         </button>
       </div>
     </div>
+    </>
   );
 }
 

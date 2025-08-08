@@ -19,7 +19,7 @@ const server = http.createServer(app);
 
 
 app.use(cors({
-  origin: ["https://chat-app-lyart-ten.vercel.app"],
+  origin: ["https://chat-app-lyart-ten.vercel.app", "http://localhost:5173"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
@@ -30,7 +30,7 @@ app.use(cors({
 
 export const io = new SocketIoServer(server, {
   cors: {
-    origin: ["https://chat-app-lyart-ten.vercel.app"],
+    origin: ["https://chat-app-lyart-ten.vercel.app", "http://localhost:5173"],
     credentials: true
   },
 });

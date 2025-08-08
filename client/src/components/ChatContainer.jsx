@@ -11,7 +11,6 @@ function ChatContainer() {
   const dispatch = useDispatch();
   const messagesEndRef = useRef(null);
   const [messageText, setMessageText] = useState("");
-  const [sendMessage, setSending] = useState(false)
 
   const { selectedUser, messages, loading, sendingMessage, error } = useSelector(state => state.chat);
   const { currentUser } = useSelector(state => state.auth);
@@ -28,7 +27,6 @@ function ChatContainer() {
     try {
       await dispatch(sendMessageToServer(messageData)).unwrap();
       setMessageText("");
-      setSending(true)
     } catch (error) {
       console.error('Failed to send message:', error);
     }
@@ -45,16 +43,13 @@ function ChatContainer() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-
   // hard to
   const isMessageFromCurrentUser = (msg) => {
     if (!msg?.sender || !currentUser?._id) return false;
-    if (msg?.sender !== currentUser?._id || msg?.sender !== selectedUser?._id){
-      return false;
-    }
-    return msg.sender._id === currentUser._id || msg.sender === currentUser._id;
+    // normalize sender IDs
+    const senderId = typeof msg.sender === "object" ? msg.sender._id : msg.sender;
+    return senderId === currentUser._id;
   };
-
 
   useEffect(() => {
     if (!socket.connected && currentUser?._id) {
@@ -65,39 +60,30 @@ function ChatContainer() {
     };
   }, [currentUser?._id]);
 
-
   // socket to subscribing message
   useEffect(() => {
     const handleReceiveMessage = (data) => {
-      console.log(data);
+      if (!data) return;
+      const senderId = typeof data.sender === "object" ? data.sender._id : data.sender;
+      const receiverId = typeof data.receiver === "object" ? data.receiver._id : data.receiver;
 
-      // doest work for now
-      if (data.receiver === currentUser?._id && data.sender !== selectedUser?._id) {
-        toast.success("got a message")
-        // toast.custom((t) => (
-        //   <div className="bg-white shadow-md rounded-md p-4 text-black">
-        //     <p>You have a new message from:</p>
-        //     <strong>{data.sender?.username || "Unknown User"}</strong>
-        //     <button onClick={() => toast.dismiss(t.id)}>Dismiss</button>
-        //   </div>
-        // ));
-        // toast.success("have a message")
+      // works for out-of-chat notifications
+      if (receiverId === currentUser?._id && senderId !== selectedUser?._id) {
+        toast.success("Got a new message");
       }
-      if (data.sender === currentUser?._id || data.sender === selectedUser?._id) {
+
+      // add to current chat window if it's for this conversation
+      if (senderId === currentUser?._id || senderId === selectedUser?._id) {
         dispatch(addMessage(data));
       }
     };
 
     socket.on("receive-message", handleReceiveMessage);
 
-    // console.log("socket called");
-
     return () => {
       socket.off("receive-message", handleReceiveMessage);
     };
-  }, [dispatch]);
-
-
+  }, [dispatch, currentUser?._id, selectedUser?._id]); // added missing deps
 
   useEffect(() => {
     if (selectedUser?._id) {
@@ -109,9 +95,6 @@ function ChatContainer() {
     scrollToLatestMessage();
     // console.log(messages); //array of obj and can be mapped 
   }, [messages]);
-
-
-
 
   if (!selectedUser) {
     return (
@@ -145,7 +128,7 @@ function ChatContainer() {
               key={msg?._id || msg?.id || idx}
               message={msg}
               isSender={isMessageFromCurrentUser(msg)}
-              onDelete={() => { }}
+              onDelete={() => {}}
             />
           ))
         )}

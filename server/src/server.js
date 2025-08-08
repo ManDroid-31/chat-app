@@ -31,6 +31,7 @@ app.use(cors({
 export const io = new SocketIoServer(server, {
   cors: {
     origin: ["https://chat-app-lyart-ten.vercel.app", "http://localhost:5173"],
+    transports: ["websocket"],
     credentials: true
   },
 });

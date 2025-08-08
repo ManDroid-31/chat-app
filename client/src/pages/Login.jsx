@@ -26,6 +26,7 @@ function Login() {
       toast.loading("Logging in...");
       const res = await fetch(`${BACKEND_URL}/auth/login`, {
         method: "POST",
+        credentials: true,
         headers: {
           "Content-Type": "application/json"
         },

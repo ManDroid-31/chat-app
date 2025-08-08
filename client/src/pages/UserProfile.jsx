@@ -40,6 +40,7 @@ function UserProfile() {
 
       try {
         const res = await fetch(`${BASE_URL}/auth/whoami`, {
+          credentials: true,
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -89,6 +90,7 @@ function UserProfile() {
 
     try {
       const res = await fetch(`${BASE_URL}/auth/updateProfile`, {
+        credentials: true,
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

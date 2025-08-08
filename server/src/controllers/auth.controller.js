@@ -67,7 +67,15 @@ export const login = async (req, res) => {
             return res.status(401).json({ message: "Invalid credentials" });
         }
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "2h" });
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,           
+            sameSite: "none",       
+            maxAge: 2 * 60 * 60 * 1000 
+        });
+
         res.status(200).json({ token, user });
+
 
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
@@ -75,33 +83,33 @@ export const login = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  try {
-    const { username, bio, email, avatar_url } = req.body;
-    const { userId } = req.user;
+    try {
+        const { username, bio, email, avatar_url } = req.body;
+        const { userId } = req.user;
 
-    if (!username || !bio || !avatar_url) {
-      return res.status(400).json({ message: "Username and bio are required." });
+        if (!username || !bio || !avatar_url) {
+            return res.status(400).json({ message: "Username and bio are required." });
+        }
+
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { username, bio, email, avatar_url },
+            { new: true, select: "-password" } // Return the updated doc, exclude password
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        console.error("Profile update error:", error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
-
-    if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { username, bio, email, avatar_url },
-      { new: true, select: "-password" } // Return the updated doc, exclude password
-    );
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    console.error("Profile update error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
 };
 
 export const whoami = async (req, res, next) => {
@@ -144,22 +152,22 @@ export const otherUserInfo = async (req, res) => {
 }
 
 export const getUsers = async (req, res) => {
-  try {
-    const currentUserId = req.user.userId;
+    try {
+        const currentUserId = req.user.userId;
 
-    if (!currentUserId) {
-      return res.status(401).json({ message: "Unauthorized" });
+        if (!currentUserId) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const users = await User.find({ _id: { $ne: currentUserId } }).select(
+            "_id username avatar_url email bio"
+        );
+
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
-
-    const users = await User.find({ _id: { $ne: currentUserId } }).select(
-      "_id username avatar_url email bio"
-    );
-
-    res.status(200).json(users);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
 };
 
 

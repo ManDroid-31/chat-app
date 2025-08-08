@@ -36,6 +36,7 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"
             try {
                 const res = await fetch(`${BASE_URL}/auth/signup`, {
                     method: "POST",
+                    credentials: true,
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ username, email, password, avatar_url }),
                 });

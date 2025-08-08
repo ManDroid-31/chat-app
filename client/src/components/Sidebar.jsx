@@ -4,17 +4,14 @@ import { fetchUsers } from '../redux/slices/authSlice';
 import { selectUser as setSelectedUser } from '../redux/slices/chatSlice';
 import { connectSocket, disconnectSocket, socket } from '../socket';
 
-function Sidebar() {
+function Sidebar({ onUserSelect }) { // ✅ Accept prop
   const dispatch = useDispatch();
-  const { users, loading } = useSelector(state => state.auth);
+  const { users, loading, currentUser } = useSelector(state => state.auth);
   const { selectedUser } = useSelector(state => state.chat);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState([])
-
-  const { currentUser } = useSelector((state) => state.auth);
-
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
     dispatch(fetchUsers());
@@ -22,7 +19,6 @@ function Sidebar() {
 
   const getFilteredUsers = () => {
     if (!users) return [];
-
     return users
       .map(user => ({
         ...user,
@@ -37,19 +33,16 @@ function Sidebar() {
       });
   };
 
-
   const handleUserSelect = (user) => {
     dispatch(setSelectedUser(user));
-    // console.log(user); //works and returns mg=ongo doc
+    if (onUserSelect) onUserSelect(user); // ✅ Notify parent for mobile toggle
   };
 
   const toggleOnlineFilter = () => {
     setShowOnlineOnly(prev => !prev);
   };
 
-  const isUserSelected = (user) => {
-    return selectedUser?._id === user._id;
-  };
+  const isUserSelected = (user) => selectedUser?._id === user._id;
 
   useEffect(() => {
     if (!socket.connected && currentUser?._id) {
@@ -64,23 +57,22 @@ function Sidebar() {
     socket.on("take-online-users", (userIds) => {
       setOnlineUsers(userIds);
     });
-
     return () => {
       socket.off("take-online-users");
     };
   }, []);
 
-
-
   const filteredUsers = getFilteredUsers();
 
   return (
-    <aside className="w-[22%] bg-white my-4 p-4 shadow-2xl hover:shadow-purple-500 transition flex flex-col rounded-r-2xl">
+    <aside className="bg-white my-4 p-4 shadow-2xl hover:shadow-purple-500 transition flex flex-col rounded-r-2xl w-full">
+      {/* Logo */}
       <div className="bg-purple-600 text-white rounded-xl px-4 py-3 font-semibold text-xl flex items-center gap-3 justify-center mb-4">
         <img src="/message-app.png" alt="logo" className="w-6 h-6" />
         <span>MessageMe</span>
       </div>
 
+      {/* Search */}
       <div className="mb-3">
         <input
           type="text"
@@ -91,20 +83,21 @@ function Sidebar() {
         />
       </div>
 
+      {/* Online toggle */}
       <div className="mb-4 text-sm text-gray-700 flex items-center justify-between">
         <label htmlFor="onlineToggle">Show Online Only</label>
         <button
           id="onlineToggle"
           onClick={toggleOnlineFilter}
-          className={`px-3 py-1 rounded-xl font-medium transition ${showOnlineOnly
-            ? 'bg-purple-600 text-white'
-            : 'bg-gray-200 text-gray-700'
-            }`}
+          className={`px-3 py-1 rounded-xl font-medium transition ${
+            showOnlineOnly ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-700'
+          }`}
         >
           {showOnlineOnly ? 'On' : 'Off'}
         </button>
       </div>
 
+      {/* User list */}
       <div className="flex-1 overflow-y-auto space-y-2 pr-1">
         {loading ? (
           <p className="text-center text-gray-500">Loading users...</p>
@@ -113,10 +106,11 @@ function Sidebar() {
             <div
               key={user._id}
               onClick={() => handleUserSelect(user)}
-              className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition ${isUserSelected(user)
-                ? 'bg-purple-100 border-l-4 border-purple-500'
-                : 'hover:bg-gray-100'
-                }`}
+              className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition ${
+                isUserSelected(user)
+                  ? 'bg-purple-100 border-l-4 border-purple-500'
+                  : 'hover:bg-gray-100'
+              }`}
             >
               <img
                 src={user.avatar_url}
@@ -128,8 +122,9 @@ function Sidebar() {
                 <p className="text-sm text-gray-500">{user.role || 'Member'}</p>
               </div>
               <span
-                className={`h-3 w-3 rounded-full ${user.isOnline ? 'bg-green-500' : 'bg-gray-400'
-                  }`}
+                className={`h-3 w-3 rounded-full ${
+                  user.isOnline ? 'bg-green-500' : 'bg-gray-400'
+                }`}
               />
             </div>
           ))

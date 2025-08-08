@@ -126,9 +126,8 @@ export const whoami = async (req, res, next) => {
     }
 }
 
-export const otherUserInfo = async (req, res, next) => {
+export const otherUserInfo = async (req, res) => {
     try {
-        verifyToken(req, res, next);
         const { receiverId } = req.body;
         if (receiverId) {
             return res.status(400).json({ message: "Please provide the receiverId(bad request)" });

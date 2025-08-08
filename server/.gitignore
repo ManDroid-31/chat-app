@@ -32,3 +32,4 @@ firebase-messaging-sw.js
 # Firebase service account key
 # *.json
 !firebase-messaging-sw.js # <-- Keep if needed
+dupesogs-firebase-adminsdk-fbsvc-798680cae3.json

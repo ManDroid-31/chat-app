@@ -1,21 +1,26 @@
 import admin from "firebase-admin";
+import fs from 'fs';
 import dotenv from "dotenv";
+
 dotenv.config();
-import fs from "fs"
-import { assert } from "console";
-// import serviceAccount from "../dupesogs-firebase-adminsdk-fbsvc-3d841ef93a.json" assert { type: "json" };
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+// Use the JSON file approach instead of environment variable
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+const firebaseConfig = process.env.FIREBASE_CONFIG;
+const serviceAccount = JSON.parse(firebaseConfig);
 
-export { admin };
+// // Initialize Firebase Admin only if not already initialized
+// if (!admin.apps.length) {
+//   admin.initializeApp({
+//     credential: admin.credential.cert(firebaseConfig),
+//   });
+// }
+
+// export { admin };
 
 export const sendPushNotification = async (fcmToken, message) => {
   try {
-    await admin.messaging().send({
+    const response = await admin.messaging().send({
       token: fcmToken,
       notification: {
         title: message.title,
@@ -23,8 +28,10 @@ export const sendPushNotification = async (fcmToken, message) => {
       },
       data: message.data || {}, // optional custom data
     });
-    console.log("Notification sent");
+    console.log("Notification sent successfully:", response);
+    return response;
   } catch (err) {
     console.error("Failed to send FCM notification:", err);
+    throw err;
   }
 };

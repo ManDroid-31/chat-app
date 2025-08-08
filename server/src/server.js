@@ -14,23 +14,23 @@ import User from './models/User.js';
 
 dotenv.config()
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
-
 const app = express();
 const server = http.createServer(app);
 
 
-app.use(
-  cors({
-    origin:[ FRONTEND_URL, "https://chat-app-lyart-ten.vercel.app"],
-    credentials: true
-  }
-  ));
+app.use(cors({
+  origin: ["https://chat-app-lyart-ten.vercel.app"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
 
+// for preflight
+// app.options("*", cors());
 
 export const io = new SocketIoServer(server, {
   cors: {
-    origin: FRONTEND_URL,
+    origin: ["https://chat-app-lyart-ten.vercel.app"],
     credentials: true
   },
 });
@@ -38,9 +38,11 @@ export const io = new SocketIoServer(server, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-( async () => await dbConnect())();
+(async () => await dbConnect())();
 
+console.log("here up")
 app.use("/messages", messageRouter);
+console.log("here below down")
 app.use("/auth", authRouter);
 
 
@@ -58,24 +60,24 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send-message", async (data) => {
-  const receiverId = data.receiver;
-  const senderId = data.sender;
+    const receiverId = data.receiver;
+    const senderId = data.sender;
 
-  console.log("sent the notification")
-  if (onlineUsers.has(receiverId)) {
-    socket.to(receiverId).emit("receive-message", data);
-  } else {
-    const user = await User.findById(receiverId);
-    const sender = await User.findById(senderId);
-    if (user?.fcm_token) {
-      
-      await sendPushNotification(user.fcm_token, {
-        title: `New message from ${sender?.username}`,
-        body: data.text,
-      });
+    console.log("sent the notification")
+    if (onlineUsers.has(receiverId)) {
+      socket.to(receiverId).emit("receive-message", data);
+    } else {
+      const user = await User.findById(receiverId);
+      const sender = await User.findById(senderId);
+      if (user?.fcm_token) {
+
+        await sendPushNotification(user.fcm_token, {
+          title: `New message from ${sender?.username}`,
+          body: data.text,
+        });
+      }
     }
-  }
-});
+  });
 
 
 
@@ -87,7 +89,7 @@ io.on("connection", (socket) => {
 
       await User.updateOne(
         { _id: userId },
-        { $set: { fcm_token } }, 
+        { $set: { fcm_token } },
         { upsert: true }
       );
 
@@ -97,17 +99,17 @@ io.on("connection", (socket) => {
     }
   })
 
-    socket.on("disconnect", () => {
-      if (socket.userId) {
-        onlineUsers.delete(socket.userId);
-        io.emit("take-online-users", Array.from(onlineUsers));
-      }
-      console.log("User disconnected:", socket.id);
-    });
+  socket.on("disconnect", () => {
+    if (socket.userId) {
+      onlineUsers.delete(socket.userId);
+      io.emit("take-online-users", Array.from(onlineUsers));
+    }
+    console.log("User disconnected:", socket.id);
   });
+});
 
 
-  const PORT = process.env.PORT || 5000;
-  server.listen(PORT, () => {
-    console.log(`server running on port: ${PORT}`);
-  })
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`server running on port: ${PORT}`);
+})

@@ -1,6 +1,7 @@
 // firebase.js
 import admin from "firebase-admin";
 import { config } from "dotenv";
+import User from "./models/User.js";
 config();
 // import serviceAccount from "./serviceAccountKey.json" assert { type: "json" };
 
@@ -20,6 +21,10 @@ export const messaging = admin.messaging();
 
 export const sendPushNotification = async (fcmToken, message) => {
   try {
+    if(!fcmToken || !message){
+      console.log('invalid FCM token or message');
+      return null;
+    }
     const response = await admin.messaging().send({
       token: fcmToken,
       notification: {
@@ -31,7 +36,24 @@ export const sendPushNotification = async (fcmToken, message) => {
     console.log("Notification sent successfully:", response);
     return response;
   } catch (err) {
-    console.error("Failed to send FCM notification:", err);
+    if (err.code === 'messaging/registration-token-not-registered' || 
+        err.code === 'messaging/invalid-registration-token') {
+      
+      console.log('Removing invalid FCM token from database');
+      
+
+      try {
+        await User.updateMany(
+          { fcm_token: fcmToken },
+          { $unset: { fcm_token: "" } }
+        );
+        console.log('Invalid FCM token removed from database');
+      } catch (dbError) {
+        console.error('Error removing invalid token:', dbError);
+      }
+      
+      return { error: 'Token invalid and removed' };
+    }
     throw err;
   }
 };
